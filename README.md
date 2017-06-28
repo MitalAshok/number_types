@@ -26,18 +26,20 @@ A class representing a (2D) coordinate.
 >>> Coordinate(0, 1) + Coordinate(1, 0)
 >>> Coordinate(1, 1)
 >>> Coordinate(-1, 0).to_polar()
-Coordinate(1.0, -0.0, False)
+Coordinate(1.0, 3.141592653589793, False)
+>>> Coordinate(-1, 0).to_polar().equals(Coordinate(-1, 0))
+True
 >>> Coordinate(3, 4).to_polar()
 Coordinate(5.0, 0.9272952180016122, False)
 >>> abs(Coordinate(3, 4))
 5.0
->>> Coordinate(3, -4).conjugate
-Coordinate(3, 4)
+>>> Coordinate(3, 4).conjugate
+Coordinate(3, -4)
 ```
 
 ## Installing
 
-### From [PyPi](https://pypi.org/project/number_types/)
+### From [PyPI](https://pypi.org/project/number_types/)
 
 ```bash
 $ pip install number_types

@@ -59,7 +59,7 @@ class Coordinate(tuple):
         if self._is_rectangular:
             if self.x:
                 theta = math.atan(self.y / self.x)
-                if self.y < 0:
+                if self.x < 0:
                     theta += math.pi
             elif self.y:
                 if self.y > 0:
@@ -147,3 +147,6 @@ class Coordinate(tuple):
         if self._is_rectangular:
             return rotated.to_rect()
         return rotated
+
+    def equals(self, other, tolerance=1e-15):
+        return abs(self - other) < tolerance
