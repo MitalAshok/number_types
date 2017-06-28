@@ -19,8 +19,6 @@ class TypedComplex(numbers.Complex):
             if not isinstance(re, numbers.Complex):
                 raise TypeError('Must give a complex number or two reals')
             re, im = re.real, re.imag
-        if not isinstance(re, numbers.Real) and not isinstance(im, numbers.Real):
-            raise TypeError('Must give a complex number or two reals')
         self = super(TypedComplex, cls).__new__(cls)
         super(TypedComplex, self).__init__()
         self._real = self.type(re)

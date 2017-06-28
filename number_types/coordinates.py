@@ -19,7 +19,7 @@ class Coordinate(tuple):
         self = super(Coordinate, cls).__new__(Coordinate, (x, y))
         super(Coordinate, self).__init__()
         self._is_rectangular = bool(is_rectangular)
-        return +self
+        return self
 
     @property
     def x(self):
@@ -46,15 +46,29 @@ class Coordinate(tuple):
         return self[1]
 
     def __repr__(self):
-        return '{type.__name__}({self.x}, {self.y})'.format(type=type(self),
-                                                            self=self)
+        if self._is_rectangular:
+            return '{type.__name__}({self.x}, {self.y})'.format(type=type(self), self=self)
+        return '{type.__name__}({self.r}, {self.theta}, False)'.format(type=type(self), self=self)
 
     def __abs__(self):
-        return (self.x ** 2 + self.y ** 2) ** 0.5
+        if self._is_rectangular:
+            return (self.x ** 2 + self.y ** 2) ** 0.5
+        return self.r
 
     def to_polar(self):
         if self._is_rectangular:
-            return +type(self)(abs(self), math.atan(self.y / self.x), False)
+            if self.x:
+                theta = math.atan(self.y / self.x)
+                if self.y < 0:
+                    theta += math.pi
+            elif self.y:
+                if self.y > 0:
+                    theta = math.tau / 4
+                else:
+                    theta = math.tau * 3 / 4
+            else:
+                theta = 0.0
+            return type(self)(abs(self), theta, False)
         return +self
 
     def to_rect(self):
