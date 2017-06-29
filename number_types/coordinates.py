@@ -15,7 +15,11 @@ class Coordinate(tuple):
     """
     def __new__(cls, x, y=None, is_rectangular=True):
         if y is None:
-            x, y = x
+            if isinstance(x, numbers.Complex):
+                y = x.imag
+                x = x.real
+            else:
+                x, y = x
         self = super(Coordinate, cls).__new__(Coordinate, (x, y))
         super(Coordinate, self).__init__()
         self._is_rectangular = bool(is_rectangular)
@@ -23,40 +27,46 @@ class Coordinate(tuple):
 
     @property
     def x(self):
-        if self._is_rectangular:
+        if self.is_rectangular:
             return self[0]
-        raise TypeError('No `x` value on a polar coordinate!')
+        return self.to_rect().x
 
     @property
     def y(self):
-        if self._is_rectangular:
+        if self.is_rectangular:
             return self[1]
-        raise TypeError('No `y` value on a polar coordinate!')
+        return self.to_rect().y
 
     @property
     def r(self):
-        if self._is_rectangular:
-            raise TypeError('No `r` value on a rectangular coordinate!')
+        if self.is_rectangular:
+            return (self.x ** 2 + self.y ** 2) ** 0.5
         return self[0]
 
     @property
     def theta(self):
-        if self._is_rectangular:
-            raise TypeError('No `theta` value on a rectangular coordinate!')
+        if self.is_rectangular:
+            return self.to_polar().theta
         return self[1]
 
+    @property
+    def is_rectangular(self):
+        return self._is_rectangular
+
+    @property
+    def is_polar(self):
+        return not self.is_rectangular
+
     def __repr__(self):
-        if self._is_rectangular:
+        if self.is_rectangular:
             return '{type.__name__}({self.x}, {self.y})'.format(type=type(self), self=self)
         return '{type.__name__}({self.r}, {self.theta}, False)'.format(type=type(self), self=self)
 
     def __abs__(self):
-        if self._is_rectangular:
-            return (self.x ** 2 + self.y ** 2) ** 0.5
         return self.r
 
     def to_polar(self):
-        if self._is_rectangular:
+        if self.is_rectangular:
             if self.x:
                 theta = math.atan(self.y / self.x)
                 if self.x < 0:
@@ -72,7 +82,7 @@ class Coordinate(tuple):
         return +self
 
     def to_rect(self):
-        if self._is_rectangular:
+        if self.is_rectangular:
             return self
         return type(self)(self.r * math.cos(self.theta), self.r * math.sin(self.theta), True)
 
@@ -84,16 +94,16 @@ class Coordinate(tuple):
 
     def __eq__(self, other):
         if isinstance(other, Coordinate):
-            if other._is_rectangular and self._is_rectangular:
+            if other.is_rectangular and self.is_rectangular:
                 return self.x == other.x and self.y == other.y
-            elif not other._is_rectangular and not other._is_rectangular:
+            elif not other.is_rectangular and not other.is_rectangular:
                 return self.r == other.r and (self.theta % math.tau) == (other.theta % math.tau)
             return self.to_rect() == other.to_rect()
         return super(Coordinate, self).__eq__(other)
 
     @property
     def conjugate(self):
-        return +type(self)(self[0], -self[1], self._is_rectangular)
+        return +type(self)(self[0], -self[1], self.is_rectangular)
 
     def __add__(self, other):
         if not isinstance(other, Coordinate):
@@ -101,15 +111,15 @@ class Coordinate(tuple):
         rect_self = self.to_rect()
         other = other.to_rect()
         added = type(self)(rect_self.x + other.x, rect_self.y + other.y, True)
-        if not self._is_rectangular:
+        if not self.is_rectangular:
             return added.to_polar()
         return added
 
     def __neg__(self):
-        return +type(self)(-self[0], -self[1], self._is_rectangular)
+        return +type(self)(-self[0], -self[1], self.is_rectangular)
 
     def __pos__(self):
-        if self._is_rectangular:
+        if self.is_rectangular:
             return type(self)(self.x, self.y, True)
         return type(self)(self.r, self.theta % math.tau, False)
 
@@ -119,14 +129,14 @@ class Coordinate(tuple):
         rect_self = self.to_rect()
         other = -other.to_rect()
         subtracted = type(self)(rect_self.x + other.x, rect_self.y + other.y, True)
-        if not self._is_rectangular:
+        if not self.is_rectangular:
             return subtracted.to_polar()
         return subtracted
 
     def __mul__(self, other):
         if not isinstance(other, numbers.Real):
             return NotImplemented
-        if self._is_rectangular:
+        if self.is_rectangular:
             return type(self)(self.x * other, self.y * other, True)
         return +type(self)(self.r * other, self.theta, False)
 
@@ -136,7 +146,7 @@ class Coordinate(tuple):
     def __truediv__(self, other):
         if not isinstance(other, numbers.Real):
             return NotImplemented
-        if self._is_rectangular:
+        if self.is_rectangular:
             return type(self)(self.x / other, self.y / other, True)
         return +type(self)(self.r / other, self.theta, False)
 
@@ -146,9 +156,12 @@ class Coordinate(tuple):
         """Rotate anticlockwise by angle radians"""
         polar_self = self.to_polar()
         rotated = +type(self)(polar_self.r, polar_self.theta + angle)
-        if self._is_rectangular:
+        if self.is_rectangular:
             return rotated.to_rect()
         return rotated
 
+    def __hash__(self):
+        return super(Coordinate, self.to_rect()).__hash__()
+
     def equals(self, other, tolerance=1e-15):
-        return abs(self - other) < tolerance
+        return abs(self - other) <= tolerance

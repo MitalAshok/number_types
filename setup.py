@@ -15,7 +15,7 @@ __dir__ = path.abspath(path.dirname(__file__))
 sys.path.insert(0, __dir__)
 
 try:
-    from number_types import __version__
+    from number_types import __version__, __author__, __email__
 finally:
     sys.path.pop(0)
 
@@ -37,8 +37,8 @@ setup_args = dict(
 
     url='https://github.com/MitalAshok/number_types',
 
-    author='MitalAshok',
-    author_email='mital.vaja@googlemail.com',
+    author=__author__,
+    author_email=__email__,
 
     license='MIT',
 

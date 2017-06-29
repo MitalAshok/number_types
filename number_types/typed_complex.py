@@ -18,7 +18,8 @@ class TypedComplex(numbers.Complex):
         if im is None:
             if not isinstance(re, numbers.Complex):
                 raise TypeError('Must give a complex number or two reals')
-            re, im = re.real, re.imag
+            im = re.imag
+            re = re.real
         self = super(TypedComplex, cls).__new__(cls)
         super(TypedComplex, self).__init__()
         self._real = self.type(re)
@@ -84,12 +85,12 @@ class TypedComplex(numbers.Complex):
         if isinstance(other, numbers.Complex):
             a = ((other ** 2) ** (self.real / 2)) * math.e ** (-self.imag * cmath.phase(other))
             b = 0.5 * self.imag * math.log(other ** 2) + self.real * cmath.phase(other)
-            return type(self)(1, 0) * (a * math.cos(b)) + type(self)(0, 1) * (a * math.sin(b))
+            return type(self)(1, 0) * (a * cmath.cos(b)) + type(self)(0, 1) * (a * cmath.sin(b))
         return NotImplemented
 
     def __rtruediv__(self, other):
         if isinstance(other, numbers.Complex):
-            return type(self).__truediv__(other, self)
+            return other * self.conjugate / (self.real ** 2 + self.imag ** 2)
         return NotImplemented
 
     def __truediv__(self, other):
@@ -198,7 +199,7 @@ class BoolComplex(TypedComplex):
 
 class FloatComplex(TypedComplex):
     type = float
-    # Note: Should be equivalent to builtin :func:`complex`
+    # Note: Should be equivalent to builtin `complex` but with extra methods
 
 class FractionComplex(TypedComplex):
     from fractions import Fraction as type
