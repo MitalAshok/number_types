@@ -40,8 +40,12 @@ class TypedComplex(numbers.Complex):
 
     def __eq__(self, other):
         if isinstance(other, numbers.Complex):
-            if self.imag == other.imag and self.real == other.real:
-                return True
+            return self.imag == other.imag and self.real == other.real
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, numbers.Complex):
+            return self.imag != other.imag or self.real != other.real
         return NotImplemented
 
     def __mul__(self, other):
@@ -96,6 +100,9 @@ class TypedComplex(numbers.Complex):
             return type(self)((self.real * other.real + self.imag * other.imag) / denom, (self.imag * other.real - self.real * other.imag) / denom)
         return NotImplemented
 
+    __div__ = __truediv__
+    __rdiv__ = __rtruediv__
+
     @property
     def conjugate(self):
         return type(self)(self.real, -self.imag)
@@ -120,6 +127,61 @@ class TypedComplex(numbers.Complex):
         except TypeError:
             # Unhashable real number type
             return hash(as_complex)
+
+    def __floor__(self):
+        return type(self)(math.floor(self.real), math.floor(self.imag))
+
+    def __ceil__(self):
+        return type(self)(math.ceil(self.real), math.ceil(self.imag))
+
+    def __round__(self, n=None):
+        return type(self)(round(self.real, n), round(self.imag, n))
+
+    def __bool__(self):
+        return bool(self.real or self.imag)
+
+    def __hex__(self):
+        try:
+            return '(0x{self.real:x}+0x{self.imag:x}j)'.format(self=self)
+        except TypeError:
+            return NotImplemented
+
+    def __floordiv__(self, other):
+        div = self.__truediv__(other)
+        if div is NotImplemented:
+            return NotImplemented
+        return div.__floor__()
+
+    def __rfloordiv__(self, other):
+        div = self.__rtruediv__(other)
+        if div is NotImplemented:
+            return NotImplemented
+        return div.__floor__()
+
+    def __oct__(self):
+        try:
+            return '(0o{self.real:o}+0o{self.imag:o}j)'.format(self=self)
+        except TypeError:
+            return NotImplemented
+
+    def __reversed__(self):
+        return type(self)(self.imag, self.real)
+
+    def __invert__(self):
+        return self.conjugate
+
+    def __mod__(self, other):
+        if isinstance(other, numbers.Complex):
+            return self + other * (-self / other).__ceil__()
+        return NotImplemented
+
+    def __rmod__(self, other):
+        if isinstance(other, numbers.Complex):
+            return other + self * type(self).__ceil__(-other / self)
+        return NotImplemented
+
+    def equals(self, other, tolerance=1e-15):
+        return abs(self - other) <= tolerance
 
 
 class IntComplex(TypedComplex):

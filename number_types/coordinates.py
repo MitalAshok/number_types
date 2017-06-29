@@ -140,6 +140,8 @@ class Coordinate(tuple):
             return type(self)(self.x / other, self.y / other, True)
         return +type(self)(self.r / other, self.theta, False)
 
+    __div__ = __truediv__
+
     def rotate(self, angle):
         """Rotate anticlockwise by angle radians"""
         polar_self = self.to_polar()
