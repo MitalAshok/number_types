@@ -6,6 +6,7 @@ import sys
 import unittest
 
 from os import path
+from codecs import open
 
 
 __dir__ = path.abspath(path.dirname(__file__))
@@ -18,6 +19,9 @@ try:
 finally:
     sys.path.pop(0)
 
+with open(path.join(__dir__, 'README.rst'), encoding='utf-8') as f:
+    long_description = f.read()
+
 
 def test_suite():
     test_loader = unittest.TestLoader()
@@ -29,6 +33,7 @@ setup_args = dict(
     version=__version__,
 
     description='Various number types for Python',
+    long_description=long_description,
 
     url='https://github.com/MitalAshok/number_types',
 
@@ -51,6 +56,7 @@ setup_args = dict(
         'Programming Language :: Python :: 3.6',
         'Topic :: Software Development :: Libraries'
     ],
+    platforms=['any'],
 
     keywords=['types', 'number', 'coordinates', 'complex'],
 
